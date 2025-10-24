@@ -31,12 +31,14 @@ interface Project {
 export default function ProjectDetail() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { userData } = useAuth();
+  const { userData, currentUser } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    if (!projectId || !userData) return;
+    if (!projectId || !userData || !currentUser) return;
+
+    const userId = userData.uid || currentUser.uid;
 
     // Fetch project details
     const fetchProject = async () => {
@@ -51,7 +53,7 @@ export default function ProjectDetail() {
     const tasksQuery = query(
       collection(db, 'tasks'),
       where('projectId', '==', projectId),
-      where('assignedTo', 'array-contains', userData.uid)
+      where('assignedTo', 'array-contains', userId)
     );
 
     const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
@@ -63,10 +65,12 @@ export default function ProjectDetail() {
     });
 
     return unsubTasks;
-  }, [projectId, userData]);
+  }, [projectId, userData, currentUser]);
 
   const handleTaskStatusChange = async (taskId: string, newStatus: 'in-progress' | 'completed') => {
     try {
+      const userId = userData?.uid || currentUser?.uid;
+      
       const updates: any = {
         status: newStatus,
         updatedAt: new Date()
@@ -78,7 +82,7 @@ export default function ProjectDetail() {
         // Add to completed tasks history
         await addDoc(collection(db, 'completedTasks'), {
           taskId,
-          userId: userData?.uid,
+          userId,
           projectId,
           completedAt: new Date(),
           notes: ''

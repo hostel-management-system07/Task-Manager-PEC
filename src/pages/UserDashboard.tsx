@@ -25,19 +25,21 @@ interface Task {
 }
 
 export default function UserDashboard() {
-  const { logout, userData } = useAuth();
+  const { logout, userData, currentUser } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
-    if (!userData) return;
+    if (!userData || !currentUser) return;
+
+    const userId = userData.uid || currentUser.uid;
 
     // Fetch projects where user is a member
     const projectsQuery = query(
       collection(db, 'projects'),
-      where('members', 'array-contains', userData.uid)
+      where('members', 'array-contains', userId)
     );
 
     const unsubProjects = onSnapshot(projectsQuery, (snapshot) => {
@@ -51,7 +53,7 @@ export default function UserDashboard() {
     // Fetch tasks assigned to user
     const tasksQuery = query(
       collection(db, 'tasks'),
-      where('assignedTo', 'array-contains', userData.uid)
+      where('assignedTo', 'array-contains', userId)
     );
 
     const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
@@ -66,7 +68,7 @@ export default function UserDashboard() {
       unsubProjects();
       unsubTasks();
     };
-  }, [userData]);
+  }, [userData, currentUser]);
 
   const handleLogout = async () => {
     await logout();

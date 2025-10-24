@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { collection, query, onSnapshot, addDoc, orderBy, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,9 @@ export function Chat({ type, projectId, receiverId, receiverName }: ChatProps) {
   useEffect(() => {
     if (!userData) return;
 
+    const userId = userData.uid || auth.currentUser?.uid;
+    if (!userId) return;
+
     const collectionName = type === 'project' ? 'projectChats' : 'privateChats';
     let q;
 
@@ -61,8 +64,8 @@ export function Chat({ type, projectId, receiverId, receiverName }: ChatProps) {
       // Filter private messages to show only conversations between current user and receiver
       if (type === 'private') {
         messagesData = messagesData.filter(msg => 
-          (msg.senderId === userData.uid && msg.receiverId === receiverId) ||
-          (msg.senderId === receiverId && msg.receiverId === userData.uid)
+          (msg.senderId === userId && msg.receiverId === receiverId) ||
+          (msg.senderId === receiverId && msg.receiverId === userId)
         );
       }
 
@@ -79,12 +82,15 @@ export function Chat({ type, projectId, receiverId, receiverName }: ChatProps) {
     e.preventDefault();
     if (!newMessage.trim() || !userData) return;
 
+    const userId = userData.uid || auth.currentUser?.uid;
+    if (!userId) return;
+
     try {
       const collectionName = type === 'project' ? 'projectChats' : 'privateChats';
       const messageData: any = {
         message: newMessage,
-        senderId: userData.uid,
-        senderName: userData.displayName,
+        senderId: userId,
+        senderName: userData.displayName || auth.currentUser?.displayName || 'User',
         timestamp: new Date()
       };
 
@@ -115,16 +121,16 @@ export function Chat({ type, projectId, receiverId, receiverName }: ChatProps) {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.senderId === userData?.uid ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.senderId === (userData?.uid || auth.currentUser?.uid) ? 'justify-end' : 'justify-start'}`}
               >
                 <div
                   className={`max-w-[70%] rounded-lg p-3 ${
-                    message.senderId === userData?.uid
+                    message.senderId === (userData?.uid || auth.currentUser?.uid)
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary text-secondary-foreground'
                   }`}
                 >
-                  {message.senderId !== userData?.uid && (
+                  {message.senderId !== (userData?.uid || auth.currentUser?.uid) && (
                     <p className="text-xs opacity-70 mb-1">{message.senderName}</p>
                   )}
                   <p className="text-sm">{message.message}</p>
