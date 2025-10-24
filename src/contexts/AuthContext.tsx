@@ -13,6 +13,8 @@ interface UserData {
   createdAt: any;
   settings?: {
     theme?: 'light' | 'dark';
+    emailNotifications?: boolean;
+    taskReminders?: boolean;
   };
 }
 
@@ -54,7 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         status: 'active',
         createdAt: serverTimestamp(),
         settings: {
-          theme: 'light'
+          theme: 'light',
+          emailNotifications: true,
+          taskReminders: true
         }
       };
       await setDoc(userRef, userData);

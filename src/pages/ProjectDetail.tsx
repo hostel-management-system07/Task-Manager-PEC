@@ -90,9 +90,10 @@ export default function ProjectDetail() {
       }
 
       await updateDoc(doc(db, 'tasks', taskId), updates);
-      toast.success(`Task marked as ${newStatus}`);
-    } catch (error) {
-      toast.error('Failed to update task');
+      toast.success(`Task marked as ${newStatus === 'in-progress' ? 'in progress' : 'completed'}`);
+    } catch (error: any) {
+      console.error('Failed to update task:', error);
+      toast.error(`Failed to update task: ${error.message || 'Permission denied. Please contact admin.'}`);
     }
   };
 
@@ -105,54 +106,54 @@ export default function ProjectDetail() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="outline" onClick={() => navigate('/dashboard/user')} className="mb-4">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <Button variant="outline" onClick={() => navigate('/dashboard/user')} className="mb-3 sm:mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{project?.name}</h1>
-            <p className="text-sm text-muted-foreground">{project?.description}</p>
+            <h1 className="text-xl sm:text-2xl font-bold">{project?.name}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">{project?.description}</p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-3 sm:gap-4 grid-cols-3 mb-4 sm:mb-8">
           <Card>
-            <CardHeader>
-              <CardTitle>Active Tasks</CardTitle>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-base">Active</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.active}</p>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+              <p className="text-2xl sm:text-4xl font-bold">{stats.active}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>In Progress</CardTitle>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-base">In Progress</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.inProgress}</p>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+              <p className="text-2xl sm:text-4xl font-bold">{stats.inProgress}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Completed</CardTitle>
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-base">Completed</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.completed}</p>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+              <p className="text-2xl sm:text-4xl font-bold">{stats.completed}</p>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="my-tasks" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="my-tasks">My Tasks</TabsTrigger>
-            <TabsTrigger value="todo">To Do</TabsTrigger>
-            <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="chat">Project Chat</TabsTrigger>
+        <Tabs defaultValue="my-tasks" className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="my-tasks" className="flex-1 text-xs sm:text-sm">My Tasks</TabsTrigger>
+            <TabsTrigger value="todo" className="flex-1 text-xs sm:text-sm">To Do</TabsTrigger>
+            <TabsTrigger value="in-progress" className="flex-1 text-xs sm:text-sm">In Progress</TabsTrigger>
+            <TabsTrigger value="completed" className="flex-1 text-xs sm:text-sm">Completed</TabsTrigger>
+            <TabsTrigger value="chat" className="flex-1 text-xs sm:text-sm">Chat</TabsTrigger>
           </TabsList>
 
           <TabsContent value="my-tasks" className="space-y-4">
@@ -204,43 +205,45 @@ function TaskList({ tasks, onStatusChange }: { tasks: Task[], onStatusChange: (i
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3 sm:gap-4">
       {tasks.map((task) => (
         <Card key={task.id}>
-          <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-lg">{task.title}</h3>
+          <CardContent className="p-4 sm:pt-6">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+              <div className="flex-1 w-full">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-base sm:text-lg">{task.title}</h3>
                   <Badge variant={
                     task.priority === 'high' ? 'destructive' :
                     task.priority === 'medium' ? 'default' : 'secondary'
-                  }>
+                  } className="text-xs">
                     {task.priority}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">{task.description}</p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">{task.description}</p>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                   <span>Due: {task.dueDate}</span>
-                  <Badge variant="outline">{task.status}</Badge>
+                  <Badge variant="outline" className="text-xs">{task.status}</Badge>
                 </div>
               </div>
-              <div className="flex flex-col gap-2 ml-4">
+              <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
                 {task.status === 'todo' && (
                   <Button
                     size="sm"
+                    className="flex-1 sm:flex-none text-xs sm:text-sm"
                     onClick={() => onStatusChange(task.id, 'in-progress')}
                   >
-                    <Circle className="mr-2 h-4 w-4" />
+                    <Circle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Start
                   </Button>
                 )}
                 {task.status === 'in-progress' && (
                   <Button
                     size="sm"
+                    className="flex-1 sm:flex-none text-xs sm:text-sm"
                     onClick={() => onStatusChange(task.id, 'completed')}
                   >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    <CheckCircle2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     Complete
                   </Button>
                 )}
