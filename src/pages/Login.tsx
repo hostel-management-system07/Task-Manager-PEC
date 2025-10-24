@@ -73,6 +73,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-border">
         <CardHeader className="text-center">
+          <img src="/PEC-LOGO.png" alt="PEC Logo" className="mx-auto mb-4 h-16 w-16" />
           <CardTitle className="text-3xl font-bold">Task Manager</CardTitle>
           <CardDescription>Sign in to manage your projects and tasks</CardDescription>
         </CardHeader>
